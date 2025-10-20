@@ -1,0 +1,22 @@
+import express from 'express';
+import dotenv from 'dotenv';
+import albumsPlugin from './api/albums/index.js';
+import songsPlugin from './api/songs/index.js';
+import usersPlugin from './api/users/index.js';
+import authenticationsPlugin from './api/authentications/index.js';
+import playlistsPlugin from './api/playlists/index.js';
+import collaborationsPlugin from './api/collaborations/index.js';
+
+dotenv.config();
+
+const app = express();
+app.use(express.json());
+
+albumsPlugin(app);
+songsPlugin(app);
+usersPlugin(app);
+authenticationsPlugin(app);
+playlistsPlugin(app);
+collaborationsPlugin(app);
+
+export default app;
