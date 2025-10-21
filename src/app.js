@@ -7,11 +7,13 @@ import authenticationsPlugin from './api/authentications/index.js';
 import playlistsPlugin from './api/playlists/index.js';
 import collaborationsPlugin from './api/collaborations/index.js';
 import exportsPlugin from './api/exports/index.js';
+import path from 'path';
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use('/uploads', express.static(path.resolve('uploads')));
 
 albumsPlugin(app);
 songsPlugin(app);

@@ -1,8 +1,4 @@
-// src/consumer/index.js
 import amqplib from 'amqplib';
-import PlaylistActivitiesService from '../services/PlaylistActivitiesService.js'; // if needed
-import PlaylistService from '../services/PlaylistsService.js';
-import PlaylistActivities from '../services/PlaylistActivitiesService.js';
 import pool from '../config/db.js';
 import nodemailer from 'nodemailer';
 
@@ -17,11 +13,10 @@ if (!RABBITMQ_SERVER) {
   process.exit(1);
 }
 
-// create transporter for nodemailer
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT || 587),
-  secure: Number(process.env.SMTP_PORT) === 465, // true for 465
+  secure: Number(process.env.SMTP_PORT) === 465,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD,
@@ -29,14 +24,12 @@ const transporter = nodemailer.createTransport({
 });
 
 async function buildPlaylistJson(playlistId) {
-  // This function uses pool (db) directly or PlaylistsService if you want.
-  // We fetch playlist id, name and songs (id, title, performer)
 
   const playlistRes = await pool.query(
     `SELECT p.id, p.name
      FROM playlists p
      WHERE p.id = $1`,
-    [playlistId]
+    [playlistId],
   );
   if (!playlistRes.rowCount) throw new Error('Playlist not found');
 
@@ -47,7 +40,7 @@ async function buildPlaylistJson(playlistId) {
      FROM playlistsongs ps
      JOIN songs s ON ps.song_id = s.id
      WHERE ps.playlist_id = $1`,
-    [playlistId]
+    [playlistId],
   );
 
   return {
@@ -77,17 +70,14 @@ async function startConsumer() {
 
             console.log(' [x] Received job:', payload);
 
-            // Build JSON
             const exportedData = await buildPlaylistJson(playlistId);
             const exportedJson = JSON.stringify(exportedData, null, 2);
 
-            // send email
             const mailOptions = {
               from: process.env.EMAIL_FROM || process.env.SMTP_USER,
               to: targetEmail,
               subject: `Export Playlist ${playlistId}`,
               text: 'Attached is the exported playlist in JSON format.',
-              // attach as file
               attachments: [
                 {
                   filename: `playlist-${playlistId}.json`,
@@ -102,12 +92,11 @@ async function startConsumer() {
             channel.ack(msg);
           } catch (err) {
             console.error('Error processing message:', err);
-            // optionally: send to dead-letter or nack with requeue=false
             channel.nack(msg, false, false);
           }
         }
       },
-      { noAck: false }
+      { noAck: false },
     );
   } catch (err) {
     console.error('Consumer error:', err);

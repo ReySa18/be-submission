@@ -40,24 +40,24 @@ class PlaylistsHandler {
 
   getPlaylistActivities = async (req, res) => {
     try {
-        const { id: playlistId } = req.params;
-        await this._service.verifyPlaylistAccess(playlistId, req.user.id);
-        const activities = await this._service._activitiesService.getActivitiesByPlaylistId(playlistId);
+      const { id: playlistId } = req.params;
+      await this._service.verifyPlaylistAccess(playlistId, req.user.id);
+      const activities = await this._service._activitiesService.getActivitiesByPlaylistId(playlistId);
 
-        return res.status(200).json({
+      return res.status(200).json({
         status: 'success',
         data: {
-            playlistId,
-            activities,
+          playlistId,
+          activities,
         },
-        });
+      });
     } catch (error) {
-        if (error instanceof ClientError)
+      if (error instanceof ClientError)
         return res.status(error.statusCode).json({ status: 'fail', message: error.message });
-        console.error('GET /playlists/:id/activities error:', error);
-        return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+      console.error('GET /playlists/:id/activities error:', error);
+      return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
-    };
+  };
 
 
   deletePlaylist = async (req, res) => {

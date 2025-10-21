@@ -22,30 +22,31 @@ class AlbumLikesService {
     await this._ensureAlbumExists(albumId);
 
     const checkQuery = {
-        text: 'SELECT id FROM user_album_likes WHERE user_id = $1 AND album_id = $2',
-        values: [userId, albumId],
+      text: 'SELECT id FROM user_album_likes WHERE user_id = $1 AND album_id = $2',
+      values: [userId, albumId],
     };
     const existingLike = await pool.query(checkQuery);
 
     if (existingLike.rowCount > 0) {
-        throw new ClientError('Anda sudah menyukai album ini', 400);
+      throw new ClientError('Anda sudah menyukai album ini', 400);
     }
 
     const id = `like-${randomUUID()}`;
     const insertQuery = {
-        text: 'INSERT INTO user_album_likes(id, user_id, album_id) VALUES($1, $2, $3) RETURNING id',
-        values: [id, userId, albumId],
+      text: 'INSERT INTO user_album_likes(id, user_id, album_id) VALUES($1, $2, $3) RETURNING id',
+      values: [id, userId, albumId],
     };
 
     const result = await pool.query(insertQuery);
 
     try {
-        await redisClient.del(`${CACHE_KEY_PREFIX}${albumId}`);
+      await redisClient.del(`${CACHE_KEY_PREFIX}${albumId}`);
     } catch (e) {
+      console.error(`Gagal menghapus cache untuk album ${albumId}:`, e.message);
     }
 
     return result.rows[0].id;
-}
+  }
 
 
   async removeLike(userId, albumId) {
@@ -63,6 +64,7 @@ class AlbumLikesService {
     try {
       await redisClient.del(`${CACHE_KEY_PREFIX}${albumId}`);
     } catch (e) {
+      console.error('Gagal menghapus like', e.message);
     }
 
     return result.rows[0].id;
@@ -81,6 +83,7 @@ class AlbumLikesService {
         }
       }
     } catch (err) {
+      console.error('Gagal mengambil cache dari Redis:', err.message);
     }
 
     const result = await pool.query(
@@ -94,6 +97,7 @@ class AlbumLikesService {
         await redisClient.setEx(cacheKey, CACHE_TTL_SECONDS, String(count));
       }
     } catch (err) {
+      console.error('Gagal mengatur cache di Redis:', err.message);
     }
 
     return { likes: count, source: 'db' };

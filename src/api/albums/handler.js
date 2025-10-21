@@ -5,7 +5,49 @@ class AlbumsHandler {
   constructor(service, albumLikesService) {
     this._service = service;
     this._albumLikesService = albumLikesService;
+    this.uploadAlbumCover = this.uploadAlbumCover.bind(this);
   }
+
+  uploadAlbumCover = async (req, res) => {
+    try {
+      const { id: albumId } = req.params;
+      const file = req.file;
+
+      if (!file) throw new ClientError('Tidak ada file yang diunggah', 400);
+
+      const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+      if (!allowed.includes(file.mimetype)) {
+        throw new ClientError('Format file tidak valid', 400);
+      }
+
+      const coverUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+      await this._service.updateAlbumCover(albumId, coverUrl);
+
+      return res.status(201).json({
+        status: 'success',
+        message: 'Sampul berhasil diunggah',
+      });
+    } catch (error) {
+      if (error.message.includes('File too large')) {
+        return res.status(413).json({
+          status: 'fail',
+          message: 'Ukuran file terlalu besar (maksimal 512KB)',
+        });
+      }
+      if (error instanceof ClientError) {
+        return res.status(error.statusCode).json({
+          status: 'fail',
+          message: error.message,
+        });
+      }
+
+      console.error(error);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Terjadi kesalahan pada server',
+      });
+    }
+  };
 
   postAlbum = async (req, res) => {
     try {

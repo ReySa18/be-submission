@@ -4,7 +4,7 @@ import NotFoundError from '../exceptions/NotFoundError.js';
 import AuthorizationError from '../exceptions/AuthorizationError.js';
 
 class PlaylistsService {
-    constructor(activitiesService) {
+  constructor(activitiesService) {
     this._activitiesService = activitiesService;
   }
 
@@ -16,17 +16,6 @@ class PlaylistsService {
     };
     const result = await pool.query(query);
     return result.rows[0].id;
-  }
-
-  async getPlaylistsByOwner(owner) {
-    const result = await pool.query(
-      `SELECT p.id, p.name, u.username
-       FROM playlists p
-       LEFT JOIN users u ON p.owner = u.id
-       WHERE p.owner = $1`,
-      [owner],
-    );
-    return result.rows;
   }
 
   async verifyPlaylistOwner(playlistId, userId) {
@@ -60,15 +49,15 @@ class PlaylistsService {
 
     const id = `playlistsong-${randomUUID()}`;
     await pool.query(
-        'INSERT INTO playlistsongs(id, playlist_id, song_id) VALUES($1,$2,$3)',
-        [id, playlistId, songId]
+      'INSERT INTO playlistsongs(id, playlist_id, song_id) VALUES($1,$2,$3)',
+      [id, playlistId, songId],
     );
 
     await this._activitiesService.addActivity({
-        playlistId,
-        songId,
-        userId,
-        action: 'add',
+      playlistId,
+      songId,
+      userId,
+      action: 'add',
     });
   }
 
@@ -101,32 +90,32 @@ class PlaylistsService {
 
   async getPlaylistsByOwner(owner) {
     const result = await pool.query(
-        `SELECT p.id, p.name, u.username
-        FROM playlists p
-        LEFT JOIN users u ON p.owner = u.id
-        LEFT JOIN collaborations c ON p.id = c.playlist_id
-        WHERE p.owner = $1 OR c.user_id = $1
-        GROUP BY p.id, u.username`,
-        [owner],
+      `SELECT p.id, p.name, u.username
+      FROM playlists p
+      LEFT JOIN users u ON p.owner = u.id
+      LEFT JOIN collaborations c ON p.id = c.playlist_id
+      WHERE p.owner = $1 OR c.user_id = $1
+      GROUP BY p.id, u.username`,
+      [owner],
     );
     return result.rows;
-    }
+  }
 
 
   async deleteSongFromPlaylist(playlistId, songId, userId) {
     const result = await pool.query(
-        'DELETE FROM playlistsongs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
-        [playlistId, songId]
+      'DELETE FROM playlistsongs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
+      [playlistId, songId],
     );
     if (!result.rowCount) throw new NotFoundError('Lagu tidak ditemukan di playlist');
 
     await this._activitiesService.addActivity({
-        playlistId,
-        songId,
-        userId,
-        action: 'delete',
+      playlistId,
+      songId,
+      userId,
+      action: 'delete',
     });
-    }
+  }
 
   async getPlaylistActivities(playlistId) {
     return this._activitiesService.getActivitiesByPlaylistId(playlistId);

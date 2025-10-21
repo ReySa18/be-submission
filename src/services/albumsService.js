@@ -4,6 +4,20 @@ import ClientError from '../exceptions/ClientError.js';
 import NotFoundError from '../exceptions/NotFoundError.js';
 
 class AlbumsService {
+
+  async updateAlbumCover(id, coverUrl) {
+    const result = await pool.query(
+      'UPDATE albums SET cover_url = $1 WHERE id = $2 RETURNING id',
+      [coverUrl, id],
+    );
+
+    if (result.rowCount === 0) {
+      throw new ClientError('Gagal memperbarui sampul album. Id tidak ditemukan', 404);
+    }
+
+    return result.rows[0].id;
+  }
+
   async addAlbum({ name, year }) {
     const id = `album-${randomUUID()}`;
     const query = {
@@ -23,12 +37,14 @@ class AlbumsService {
       [id],
     );
 
-    const album = {
-      ...result.rows[0],
+    const album = result.rows[0];
+    return {
+      id: album.id,
+      name: album.name,
+      year: album.year,
+      coverUrl: album.cover_url || null,
       songs: songsResult.rows,
     };
-
-    return album;
   }
 
   async editAlbumById(id, { name, year }) {

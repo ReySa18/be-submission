@@ -1,4 +1,5 @@
 import express from 'express';
+import upload from '../../config/multerConfig.js';
 
 const routes = (handler, authenticate) => {
   const router = express.Router();
@@ -11,7 +12,9 @@ const routes = (handler, authenticate) => {
   router.post('/:id/likes', authenticate, handler.postAlbumLike);
   router.delete('/:id/likes', authenticate, handler.deleteAlbumLike);
   router.get('/:id/likes', handler.getAlbumLikes);
-  
+
+  router.post('/:id/covers', upload, handler.uploadAlbumCover);
+
   return router;
 };
 
