@@ -12,18 +12,21 @@
     "migrate:down": "node-pg-migrate down",
     "migrate:create": "node-pg-migrate create",
     "migrate:status": "node-pg-migrate status",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "start:consumer": "node src/consumer/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "amqplib": "^0.10.9",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "joi": "^18.0.1",
     "jsonwebtoken": "^9.0.2",
     "node-pg-migrate": "^8.0.3",
+    "nodemailer": "^7.0.9",
     "pg": "^8.16.3",
     "uuid": "^13.0.0"
   },

@@ -6,6 +6,7 @@ import usersPlugin from './api/users/index.js';
 import authenticationsPlugin from './api/authentications/index.js';
 import playlistsPlugin from './api/playlists/index.js';
 import collaborationsPlugin from './api/collaborations/index.js';
+import exportsPlugin from './api/exports/index.js';
 
 dotenv.config();
 
@@ -18,5 +19,6 @@ usersPlugin(app);
 authenticationsPlugin(app);
 playlistsPlugin(app);
 collaborationsPlugin(app);
+exportsPlugin(app);
 
 export default app;
