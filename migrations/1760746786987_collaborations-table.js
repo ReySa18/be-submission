@@ -11,7 +11,7 @@ export async function up(pgm) {
   pgm.addConstraint('collaborations', 'fk_collaborations_playlist', {
     foreignKeys: {
       columns: 'playlist_id',
-      referenceAs: 'playlists(id)',
+      references: 'playlists(id)',
       onDelete: 'CASCADE',
     },
   });

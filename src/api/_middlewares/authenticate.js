@@ -11,7 +11,7 @@ const authenticate = (tokenManager) => (req, res, next) => {
 
     const payload = tokenManager.verifyAccessToken(token);
 
-    req.user = { id: payload.userId };
+    req.user = { id: payload.userId || payload.userId };
 
     return next();
   } catch (error) {
